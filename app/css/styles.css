@@ -18,3 +18,12 @@
 .prefix {
   text-transform: uppercase;
 }
+
+ol {
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+ol li {
+  flex: 0 0 auto;
+}

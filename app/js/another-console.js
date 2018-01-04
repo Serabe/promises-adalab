@@ -14,6 +14,7 @@ export default class Console {
 
   write(type, msg) {
     if (this.cleared) { return; }
+    this.oldConsole[type](msg);
     const item = document.createElement('li');
     const prefix = document.createElement('span');
     const message = document.createElement('span');
@@ -27,7 +28,7 @@ export default class Console {
     prefix.textContent = `${type}: `;
     message.textContent = msg;
 
-    this.listElement.prepend(item);
+    this.listElement.append(item);
   }
 
   debug() { this.write('debug', ...arguments); }
@@ -37,7 +38,7 @@ export default class Console {
   warning() { this.write('debug', ...arguments); }
 }
 
-export function init(consoleOutput = document.createElement('ul')) {
+export function init(consoleOutput = document.createElement('ol')) {
   consoleOutput.classList.add('console');
   document.body.append(consoleOutput);
   console = new Console(consoleOutput, console);
