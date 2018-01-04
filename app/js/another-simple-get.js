@@ -1,11 +1,11 @@
-function myRequest(url, options = {}) {
+export default function(url, options = {}) {
   const request = new XMLHttpRequest();
-  request.open(options.method | 'GET', url, true);
+  request.open(options.method || 'GET', url, true);
   const callbacks = options.callbacks || { };
   Object.keys(callbacks).forEach(key => {
-    request.addEventListener(key, function() {
-      callbacks[key].call(null, this, ...arguments);
-    });
+    request[`on${key}`] = (...args) => {
+      callbacks[key].call(null, request, ...args);
+    };
   });
-  request.open();
+  request.send();
 }
