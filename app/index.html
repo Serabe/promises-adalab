@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+    <head>
+          <meta charset="utf-8">
+
+            <title>BasicPromises</title>
+            <meta name="description" content="BasicPromises">
+            <meta name="author" content="Sergio Arbeo">
+
+            <link rel="stylesheet" href="styles.css">
+
+            <!--[if lt IE 9]>
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.js"></script>
+            <![endif]-->
+    </head>
+
+    <body>
+  
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.5/require.min.js"></script>
+        <script src="app.js"></script>
+        <script>
+            require(['promises/app'], function(app) {
+                app.init();
+            });
+        </script>
+    </body>
+</html>

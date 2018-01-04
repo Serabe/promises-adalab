@@ -1,0 +1,20 @@
+.error .prefix {
+  color: red;
+}
+
+.info .prefix {
+  color: aqua;
+}
+
+.warning .prefix,
+.debug .prefix {
+  color: yellow;
+}
+
+.log .prefix {
+  font-style: italic;
+}
+
+.prefix {
+  text-transform: uppercase;
+}

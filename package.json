@@ -1,0 +1,25 @@
+{
+  "name": "promises",
+  "version": "0.0.1",
+  "description": "A simple project to learn some promises",
+  "main": "index.js",
+  "repository": "git@github.com:Serabe/promises-adalab",
+  "author": "Sergio Arbeo",
+  "license": "MIT",
+  "scripts": {
+    "start": "node_modules/.bin/broccoli serve"
+  },
+  "devDependencies": {
+    "babel-plugin-transform-es2015-modules-amd": "^6.24.1",
+    "babel-preset-env": "^1.6.1",
+    "broccoli": "^1.1.4",
+    "broccoli-babel-transpiler": "^6.1.2",
+    "broccoli-cli": "^1.0.0",
+    "broccoli-concat": "^3.2.2",
+    "broccoli-funnel": "^2.0.1",
+    "broccoli-merge-trees": "^2.0.0",
+    "broccoli-postcss": "^3.5.2",
+    "express": "^4.16.2",
+    "postcss-cssnext": "^3.0.2"
+  }
+}
