@@ -10,6 +10,6 @@ To get the project running,  after installing all requirements, do:
 
 1. Clone this repo.
 2. Open a terminal in the folder.
-3. `yarn`
-4. `yarn start`
+3. `npm install`
+4. `npm run start`
 5. Open [http://localhost:4200](http://localhost:4200)
