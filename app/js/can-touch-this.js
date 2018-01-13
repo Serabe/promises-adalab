@@ -1,59 +1,39 @@
 import paths from  'promises/paths';
 import get from 'promises/another-simple-get';
 
+function randomSample(collection) {
+  const { length } = collection;
+  return collection[Math.floor(Math.random() * length)];
+};
+
 export function init() {
+  console.log('Requesting users');
   get(paths.users(), {
     method: 'GET',
     callbacks: {
       load(res) {
-        const users = JSON.parse(res.responseText);
-        const totalComments = new Array(users.length);
-        let finishedProcesses = 0;
-        function shallGoOn() {
-          finishedProcesses += 1;
-          if (finishedProcesses === users.length) {
-            users.forEach((user, idx) => {
-              console.log(`${user.name}: ${totalComments[idx]} comments`);
-            });
-          }
-        };
+        const user = randomSample(JSON.parse(res.responseText));
 
-        function addCommentCount(userIdx, count) {
-          totalComments[userIdx] = count;
-          shallGoOn();
-        }
+        console.log(`Requesting posts for user ${user.name}`);
+        get(paths.postsByUser(user.id), {
+          method: 'GET',
+          callbacks: {
+            load(res) {
+              const post = randomSample(JSON.parse(res.responseText));
 
-        users.forEach((user, userIdx) => {
-          get(paths.postsByUser(user.id), {
-            method: 'GET',
-            callbacks: {
-              load(res) {
-                const posts = JSON.parse(res.responseText);
-                let postsCounted = 0;
-                let commentCount = Math.floor(Math.random() * -5);
+              console.log(`Requesting comments for post "${post.title}"`);
+              get(paths.commentsForPost(post.id), {
+                method: 'GET',
+                callbacks: {
+                  load(res) {
+                    const comments = JSON.parse(res.responseText);
 
-                function countComments(count) {
-                  postsCounted += 1;
-                  commentCount += count;
-                  if (postsCounted === posts.length) {
-                    addCommentCount(userIdx, commentCount);
+                    console.info(`User ${user.name} has ${comments.length} comments in their post "${post.title}"`);
                   }
                 }
-
-                posts.forEach(post => {
-                  get(paths.commentsForPost(post.id), {
-                    method: 'GET',
-                    callbacks: {
-                      load(res) {
-                        const comments = JSON.parse(res.responseText);
-                        countComments(comments.length);
-                      }
-                    }
-                  });
-                });
-              }
+              });
             }
-          });
+          }
         });
       }
     }
