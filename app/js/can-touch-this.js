@@ -43,39 +43,6 @@ function countComments(post) {
     .then(comments => comments.length);
 }
 
-function resolveAll(coll) {
-  return new Promise(function(resolve, reject) {
-    let count = coll.length;
-    let result = new Array(count);
-    let rejected = false;
-    function pingResolve() {
-      count = count - 1;
-      if (!rejected && count === 0) {
-        resolve(result);
-      }
-    }
-    function thenCallback(index) {
-      return function(value) {
-        result[index] = value;
-        pingResolve();
-      }
-    }
-    function rejectCallback(reason) {
-      if (!rejected) {
-        rejected = true;
-        reject(reason);
-      }
-    }
-    coll.forEach((obj, idx) => {
-      Promise.resolve(obj)
-        .then(
-          thenCallback(idx),
-          rejectCallback
-        );
-    });
-  });
-}
-
 export function init() {
   console.log('Requesting users');
   let userName, postTitle;
@@ -84,7 +51,7 @@ export function init() {
     .then(randomSample);
   let post = getRandomPost(user);
   let commentCount = countComments(post);
-  resolveAll([user, post, commentCount])
+  Promise.all([user, post, commentCount])
     .then(([user, post, commentCount]) => {
       console.info(`User ${userName} has ${commentCount} comments in their post "${postTitle}"`);
     })
