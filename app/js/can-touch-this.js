@@ -1,10 +1,9 @@
 import paths from  'promises/paths';
 import get from 'promises/another-simple-get';
 
-function randomSample(collection) {
-  const { length } = collection;
-  return collection[Math.floor(Math.random() * length)];
-};
+function sumAll(coll) {
+  return coll.reduce((a, b) => a + b, 0);
+}
 
 function fetch(url, { method = 'GET' } = {}) {
   return new Promise(function(resolve, reject) {
@@ -22,7 +21,7 @@ function fetch(url, { method = 'GET' } = {}) {
   });
 }
 
-function getRandomPost(user) {
+function getPosts(user) {
   return Promise.resolve(user)
     .then((user) => {
       console.log(`Requesting posts for user ${user.name}`);
@@ -30,7 +29,6 @@ function getRandomPost(user) {
       return fetch(paths.postsByUser(user.id))
     })
     .then(JSON.parse)
-    .then(randomSample);
 }
 
 function countComments(post) {
@@ -43,17 +41,23 @@ function countComments(post) {
     .then(comments => comments.length);
 }
 
+function getCommentsCount(user) {
+  return getPosts(user)
+    .then(posts => Promise.all(posts.map(countComments)))
+    .then(sumAll)
+}
+
 export function init() {
   console.log('Requesting users');
   let userName, postTitle;
-  let user = fetch(paths.users())
-    .then(JSON.parse)
-    .then(randomSample);
-  let post = getRandomPost(user);
-  let commentCount = countComments(post);
-  Promise.all([user, post, commentCount])
-    .then(([user, post, commentCount]) => {
-      console.info(`User ${userName} has ${commentCount} comments in their post "${postTitle}"`);
+  let users = fetch(paths.users())
+    .then(JSON.parse);
+  let commentCounts = users.then(users => Promise.all(users.map(getCommentsCount)));
+  Promise.all([users, commentCounts])
+    .then(([users, commentCounts]) => {
+      users.forEach((user, idx) => {
+        console.info(`User ${user.name} has ${commentCounts[idx]} comments`);
+      });
     })
     .catch(reason => console.error(reason));
 }
