@@ -43,23 +43,49 @@ function countComments(post) {
     .then(comments => comments.length);
 }
 
+function resolveAll(coll) {
+  return new Promise(function(resolve, reject) {
+    let count = coll.length;
+    let result = new Array(count);
+    let rejected = false;
+    function pingResolve() {
+      count = count - 1;
+      if (!rejected && count === 0) {
+        resolve(result);
+      }
+    }
+    function thenCallback(index) {
+      return function(value) {
+        result[index] = value;
+        pingResolve();
+      }
+    }
+    function rejectCallback(reason) {
+      if (!rejected) {
+        rejected = true;
+        reject(reason);
+      }
+    }
+    coll.forEach((obj, idx) => {
+      Promise.resolve(obj)
+        .then(
+          thenCallback(idx),
+          rejectCallback
+        );
+    });
+  });
+}
+
 export function init() {
   console.log('Requesting users');
   let userName, postTitle;
-  fetch(paths.users())
+  let user = fetch(paths.users())
     .then(JSON.parse)
-    .then(randomSample)
-    .then(user => {
-      userName = user.name;
-      return user;
-    })
-    .then(getRandomPost)
-    .then(post => {
-      postTitle = post.title;
-      return post;
-    })
-    .then(countComments)
-    .then(commentCount => {
+    .then(randomSample);
+  let post = getRandomPost(user);
+  let commentCount = countComments(post);
+  resolveAll([user, post, commentCount])
+    .then(([user, post, commentCount]) => {
       console.info(`User ${userName} has ${commentCount} comments in their post "${postTitle}"`);
     })
     .catch(reason => console.error(reason));
