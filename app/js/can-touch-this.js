@@ -5,6 +5,10 @@ function sumAll(coll) {
   return coll.reduce((a, b) => a + b, 0);
 }
 
+function timeout(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 function fetch(url, { method = 'GET' } = {}) {
   return new Promise(function(resolve, reject) {
     get(url, {
@@ -53,11 +57,14 @@ export function init() {
   let users = fetch(paths.users())
     .then(JSON.parse);
   let commentCounts = users.then(users => Promise.all(users.map(getCommentsCount)));
-  Promise.all([users, commentCounts])
+  let process = Promise.all([users, commentCounts])
+    .catch(reason => console.error(reason));
+  let limit = timeout(1500).then(() => Promise.reject());
+  Promise.race([process, limit])
     .then(([users, commentCounts]) => {
       users.forEach((user, idx) => {
         console.info(`User ${user.name} has ${commentCounts[idx]} comments`);
       });
     })
-    .catch(reason => console.error(reason));
+    .catch(() => console.error('Timeout!'));
 }
