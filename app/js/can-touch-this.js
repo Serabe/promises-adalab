@@ -22,6 +22,27 @@ function fetch(url, { method = 'GET' } = {}) {
   });
 }
 
+function getRandomPost(user) {
+  return Promise.resolve(user)
+    .then((user) => {
+      console.log(`Requesting posts for user ${user.name}`);
+
+      return fetch(paths.postsByUser(user.id))
+    })
+    .then(JSON.parse)
+    .then(randomSample);
+}
+
+function countComments(post) {
+  return Promise.resolve(post)
+    .then((post) => {
+      console.log(`Requesting comments for post "${post.title}"`);
+      return fetch(paths.commentsForPost(post.id));
+    })
+    .then(JSON.parse)
+    .then(comments => comments.length);
+}
+
 export function init() {
   console.log('Requesting users');
   let userName, postTitle;
@@ -29,21 +50,17 @@ export function init() {
     .then(JSON.parse)
     .then(randomSample)
     .then(user => {
-      userName = user.name
-      console.log(`Requesting posts for user ${userName}`);
-
-      return fetch(paths.postsByUser(user.id))
+      userName = user.name;
+      return user;
     })
-    .then(JSON.parse)
-    .then(randomSample)
+    .then(getRandomPost)
     .then(post => {
       postTitle = post.title;
-      console.log(`Requesting comments for post "${postTitle}"`);
-      return fetch(paths.commentsForPost(post.id));
+      return post;
     })
-    .then(JSON.parse)
-    .then(comments => {
-      console.info(`User ${userName} has ${comments.length} comments in their post "${postTitle}"`);
+    .then(countComments)
+    .then(commentCount => {
+      console.info(`User ${userName} has ${commentCount} comments in their post "${postTitle}"`);
     })
     .catch(reason => console.error(reason));
 }
