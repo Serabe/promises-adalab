@@ -29,7 +29,7 @@ module.exports = mergeTrees([
     presets: [
       ['env', {
         targets: {
-          browsers: ['last 2 versions']
+          browsers: ['last 2 Chrome versions', 'last 2 Firefox versions']
         }
       }]
     ],
