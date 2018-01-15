@@ -24,22 +24,26 @@ function fetch(url, { method = 'GET' } = {}) {
 
 export function init() {
   console.log('Requesting users');
+  let userName, postTitle;
   fetch(paths.users())
-    .then((txt) => {
-      const user = randomSample(JSON.parse(txt));
+    .then(JSON.parse)
+    .then(randomSample)
+    .then(user => {
+      userName = user.name
+      console.log(`Requesting posts for user ${userName}`);
 
-      console.log(`Requesting posts for user ${user.name}`);
-      fetch(paths.postsByUser(user.id))
-        .then((txt) => {
-          const post = randomSample(JSON.parse(txt));
-
-          console.log(`Requesting comments for post "${post.title}"`);
-          fetch(paths.commentsForPost(post.id))
-            .then((txt) => {
-              const comments = JSON.parse(txt);
-
-              console.info(`User ${user.name} has ${comments.length} comments in their post "${post.title}"`);
-            }, reason => console.error(reason));
-        }, reason => console.error(reason));
-    }, reason => console.error(reason));
+      return fetch(paths.postsByUser(user.id))
+    })
+    .then(JSON.parse)
+    .then(randomSample)
+    .then(post => {
+      postTitle = post.title;
+      console.log(`Requesting comments for post "${postTitle}"`);
+      return fetch(paths.commentsForPost(post.id));
+    })
+    .then(JSON.parse)
+    .then(comments => {
+      console.info(`User ${userName} has ${comments.length} comments in their post "${postTitle}"`);
+    })
+    .catch(reason => console.error(reason));
 }
