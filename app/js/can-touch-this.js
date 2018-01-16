@@ -25,46 +25,48 @@ function fetch(url, { method = 'GET' } = {}) {
   });
 }
 
-function getPosts(user) {
-  return Promise.resolve(user)
-    .then((user) => {
-      console.log(`Requesting posts for user ${user.name}`);
-
-      return fetch(paths.postsByUser(user.id))
-    })
-    .then(JSON.parse)
+async function getPosts(_user) {
+  const user = await Promise.resolve(_user);
+  console.log(`Requesting posts for user ${user.name}`);
+  return JSON.parse(await fetch(paths.postsByUser(user.id)));
 }
 
-function countComments(post) {
-  return Promise.resolve(post)
-    .then((post) => {
-      console.log(`Requesting comments for post "${post.title}"`);
-      return fetch(paths.commentsForPost(post.id));
-    })
-    .then(JSON.parse)
-    .then(comments => comments.length);
+async function countComments(_post) {
+  const post = await Promise.resolve(_post)
+  console.log(`Requesting comments for post "${post.title}"`);
+  const comments = JSON.parse(await fetch(paths.commentsForPost(post.id)));
+  return comments.length;
 }
 
-function getCommentsCount(user) {
-  return getPosts(user)
-    .then(posts => Promise.all(posts.map(countComments)))
-    .then(sumAll)
+async function getCommentsCount(user) {
+  const posts = await getPosts(user)
+  const commentCounts = await Promise.all(posts.map(countComments));
+  return sumAll(commentCounts);
 }
 
-export function init() {
-  console.log('Requesting users');
-  let userName, postTitle;
-  let users = fetch(paths.users())
-    .then(JSON.parse);
-  let commentCounts = users.then(users => Promise.all(users.map(getCommentsCount)));
-  let process = Promise.all([users, commentCounts])
-    .catch(reason => console.error(reason));
-  let limit = timeout(1500).then(() => Promise.reject());
-  Promise.race([process, limit])
-    .then(([users, commentCounts]) => {
-      users.forEach((user, idx) => {
-        console.info(`User ${user.name} has ${commentCounts[idx]} comments`);
-      });
-    })
-    .catch(() => console.error('Timeout!'));
+async function printUsersAndComments() {
+  try {
+    console.log('Requesting users');
+    const users = JSON.parse(await fetch(paths.users()));
+
+    let commentCounts = await Promise.all(users.map(getCommentsCount));
+
+    for(let i = 0; i < users.length; i++) {
+      console.info(`User ${users[i].name} has ${commentCounts[i]} comments`);
+    }
+  } catch(reason) {
+    console.error(reason);
+  }
+}
+
+function limit(ms) {
+  timeout(ms).then(Promise.reject);
+}
+
+export async function init() {
+  try {
+    await Promise.race([printUsersAndComments(), limit(1500)])
+  } catch(reason) {
+    console.error('Timeout!');
+  }
 }
